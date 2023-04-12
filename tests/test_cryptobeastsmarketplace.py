@@ -4,13 +4,23 @@ from brownie import CryptoBeastsMarketplace, CryptoBeastsNFT, \
 
 
 @pytest.fixture
-def token_contract():
-    return accounts[0].deploy(CryptoBeastsNFT)
+def founders_address():
+    return accounts[5]
 
 
 @pytest.fixture
-def game_token_contract():
-    return accounts[0].deploy(CryptoBeastsCoin, "CryptoBeasts Coin", "CBC")
+def reserves_address():
+    return accounts[4]
+
+
+@pytest.fixture
+def game_token_contract(founders_address, reserves_address):
+    return accounts[0].deploy(CryptoBeastsCoin, founders_address, reserves_address)
+
+
+@pytest.fixture
+def token_contract(game_token_contract):
+    return accounts[0].deploy(CryptoBeastsNFT, game_token_contract.address)
 
 
 @pytest.fixture
@@ -121,17 +131,17 @@ def test_only_owner_can_withdraw_commission(token_contract, game_token_contract,
     assert game_token_contract.balanceOf(marketplace_contract) == commission
 
 
-def test_offer_token(game_token_contract, nft_contract):
+def test_offer_token(game_token_contract, token_contract):
     # Define the initial setup
     account = accounts[0]
     tokenId = 1
     offer_price = 1000
     marketplace = CryptoBeastsMarketplace.deploy(
-        nft_contract.address, game_token_contract.address, {'from': account})
+        token_contract.address, game_token_contract.address, {'from': account})
 
     # Mint a token and approve marketplace to manage it
-    nft_contract.mint(account, tokenId, {'from': account})
-    nft_contract.setApprovalForAll(
+    token_contract.mint(account, tokenId, {'from': account})
+    token_contract.setApprovalForAll(
         marketplace.address, True, {'from': account})
 
     # Offer the token in the marketplace
@@ -146,7 +156,7 @@ def test_offer_token(game_token_contract, nft_contract):
     assert offer["price"] == offer_price
 
 
-def test_buy_token(game_token_contract, nft_contract):
+def test_buy_token(game_token_contract, token_contract):
     # Define the initial setup
     seller = accounts[0]
     buyer = accounts[1]
@@ -156,11 +166,12 @@ def test_buy_token(game_token_contract, nft_contract):
 
     # Deploy the marketplace contract
     marketplace = CryptoBeastsMarketplace.deploy(
-        nft_contract.address, game_token_contract.address, {'from': seller})
+        token_contract.address, game_token_contract.address, {'from': seller})
 
     # Mint a token and approve marketplace to manage it
-    nft_contract.mint(seller, tokenId, {'from': seller})
-    nft_contract.setApprovalForAll(marketplace.address, True, {'from': seller})
+    token_contract.mint(seller, tokenId, {'from': seller})
+    token_contract.setApprovalForAll(
+        marketplace.address, True, {'from': seller})
 
     # Offer the token in the marketplace
     marketplace.offerToken(tokenId, offer_price, {'from': seller})
@@ -174,14 +185,14 @@ def test_buy_token(game_token_contract, nft_contract):
     tx = marketplace.buyToken(tokenId, {'from': buyer})
 
     # Check if the token has been transferred to the buyer
-    assert nft_contract.ownerOf(tokenId) == buyer
+    assert token_contract.ownerOf(tokenId) == buyer
 
     # Check if the offer has been removed from the marketplace
     offer = marketplace.tokenIdToOffer(tokenId)
     assert offer["isForSale"] == False
 
 
-def test_cannot_buy_token_for_lower_price(game_token_contract, nft_contract):
+def test_cannot_buy_token_for_lower_price(game_token_contract, token_contract):
     # Define the initial setup
     seller = accounts[0]
     buyer = accounts[1]
@@ -191,11 +202,12 @@ def test_cannot_buy_token_for_lower_price(game_token_contract, nft_contract):
 
     # Deploy the marketplace contract
     marketplace = CryptoBeastsMarketplace.deploy(
-        nft_contract.address, game_token_contract.address, {'from': seller})
+        token_contract.address, game_token_contract.address, {'from': seller})
 
     # Mint a token and approve marketplace to manage it
-    nft_contract.mint(seller, tokenId, {'from': seller})
-    nft_contract.setApprovalForAll(marketplace.address, True, {'from': seller})
+    token_contract.mint(seller, tokenId, {'from': seller})
+    token_contract.setApprovalForAll(
+        marketplace.address, True, {'from': seller})
 
     # Offer the token in the marketplace
     marketplace.offerToken(tokenId, offer_price, {'from': seller})
@@ -211,7 +223,7 @@ def test_cannot_buy_token_for_lower_price(game_token_contract, nft_contract):
             tokenId, {'from': buyer, 'value': insufficient_amount})
 
 
-def test_cannot_offer_non_owned_token(game_token_contract, nft_contract):
+def test_cannot_offer_non_owned_token(game_token_contract, token_contract):
     # Define the initial setup
     owner = accounts[0]
     non_owner = accounts[1]
@@ -220,10 +232,10 @@ def test_cannot_offer_non_owned_token(game_token_contract, nft_contract):
 
     # Deploy the marketplace contract
     marketplace = CryptoBeastsMarketplace.deploy(
-        nft_contract.address, game_token_contract.address, {'from': owner})
+        token_contract.address, game_token_contract.address, {'from': owner})
 
     # Mint a token for the owner
-    nft_contract.mint(owner, tokenId, {'from': owner})
+    token_contract.mint(owner, tokenId, {'from': owner})
 
     # Attempt to offer the token in the marketplace by a non-owner
     with reverts("The token does not belong to the seller."):

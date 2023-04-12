@@ -10,23 +10,21 @@ contract CryptoBeastsCoin is ERC20, Ownable {
     uint256 private constant RESERVES_ALLOCATION = (TOTAL_SUPPLY * 20) / 100; // 20% for reserves
     uint256 private constant REWARDS_ALLOCATION = (TOTAL_SUPPLY * 70) / 100; // 70% for player rewards
 
-    mapping(address => uint256) private rewards;
+    mapping(address => uint256) public pendingRewards;
 
     // Define variable for the current rewards remaining
-    uint256 public rewardsRemaining;
+    uint256 public rewardsPool;
 
-    constructor(
-        address foundersWallet,
-        address reservesWallet
-    ) ERC20("CryptoBeastsCoin", "CBC") {
+    constructor(address reservesWallet) ERC20("CryptoBeastsCoin", "CBC") {
         // Allocate tokens for founders and reserves
-        _mint(foundersWallet, FOUNDERS_ALLOCATION);
+        // The founders tokens will be sent to the owner of the contract
+        _mint(msg.sender, FOUNDERS_ALLOCATION);
         _mint(reservesWallet, RESERVES_ALLOCATION);
 
         // Allocate the remaining tokens for player rewards
         _mint(address(this), REWARDS_ALLOCATION);
 
-        rewardsRemaining = REWARDS_ALLOCATION;
+        rewardsPool = REWARDS_ALLOCATION;
     }
 
     function updatePlayerRewards(
@@ -34,19 +32,19 @@ contract CryptoBeastsCoin is ERC20, Ownable {
         uint256 amount
     ) external onlyOwner {
         require(
-            rewardsRemaining >= amount,
+            rewardsPool >= amount,
             "CryptoBeastsCoin: Not enough tokens left for rewards"
         );
-        rewards[player] += amount;
-        rewardsRemaining -= amount;
+        pendingRewards[player] += amount;
+        rewardsPool -= amount;
     }
 
     function claimRewards() external {
-        uint256 reward = rewards[msg.sender];
+        uint256 reward = pendingRewards[msg.sender];
         require(reward > 0, "CryptoBeastsCoin: No rewards available to claim");
 
+        pendingRewards[msg.sender] = 0;
         _transfer(address(this), msg.sender, reward);
-        rewards[msg.sender] = 0;
     }
 
     function updateMultiplePlayerRewards(
@@ -67,15 +65,15 @@ contract CryptoBeastsCoin is ERC20, Ownable {
             uint256 amount = amounts[i];
 
             require(
-                rewardsRemaining >= amount,
+                rewardsPool >= amount,
                 "CryptoBeastsCoin: Not enough tokens left for rewards"
             );
-            rewards[player] += amount;
-            rewardsRemaining -= amount;
+            pendingRewards[player] += amount;
+            rewardsPool -= amount;
         }
     }
 
     function getPlayerRewards(address player) external view returns (uint256) {
-        return rewards[player];
+        return pendingRewards[player];
     }
 }
