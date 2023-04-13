@@ -13,7 +13,7 @@ const Layout = () => {
             <Link to="/">Dashboard</Link>
           </li>          
           <li>
-            <Link to="/">Network</Link>
+            <Link to="/">Friends</Link>
           </li>
           <li>
             <Link to="/">Store</Link>
