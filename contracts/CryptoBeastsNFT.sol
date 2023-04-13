@@ -12,11 +12,14 @@ contract CryptoBeastsNFT is ERC721Enumerable, Ownable, Pausable {
 
     IERC20 public paymentToken;
 
-    uint256 private constant MAX_SUPPLY = 100000; // Suministro máximo de cartas de cada tipo
-    // uint256 public constant SINGLE_CARD_COST = 10 * 10 ** 18;
-    // uint256 public constant SPECIFIC_CARD_COST = 12 * 10 ** 18;
-    uint256 public constant RANDOM_DECK_COST = 360 * 10 ** 18;
-    uint256 public constant BURN_REWARD = RANDOM_DECK_COST / 40 - 2 * 10 ** 18;
+    uint256 public constant BOOSTER_PACK_COST = 50 * 10 ** 18;
+    uint256 public constant BURN_REWARD = 7 * 10 ** 18;
+
+    // Suministro del grupo inicial
+    uint256 private constant MAX_SUPPLY = 100_000;
+    uint256 private constant CANTIDAD_CRIATURAS_INICIALES = 21;
+    uint256 private constant CANTIDAD_HABILIDADES_INICIALES = 11;
+    uint256 private constant CANTIDAD_OBJETOS_INICIALES = 11;
 
     // Probabilidades:
     uint256 public constant LEGENDARY_PROBABILITY = 5;
@@ -42,28 +45,46 @@ contract CryptoBeastsNFT is ERC721Enumerable, Ownable, Pausable {
     // Cantidad de cartas disponibles para cada cardId
     mapping(uint256 => uint256) public cardStock;
 
+    // Limitar la cantidad de cartas que se pueden quemar por día
+    uint256 public burnLimit = 10; // Límite de cartas quemadas por usuario en un período de tiempo
+    uint256 public burnTimeFrame = 86400; // Período de tiempo en segundos (86400 segundos = 24 horas)
+
+    mapping(address => uint256) private _burnedCards;
+    mapping(address => uint256) private _lastBurnTime;
+
+    // Array que lleva la lista de cartas disponibles por tipo
+    uint256[] public criaturasDisponibles;
+    uint256[] public habilidadesDisponibles;
+    uint256[] public objetosDisponibles;
+
     // Constructor
     constructor(address _paymentToken) ERC721("CryptoBeastsNFT", "CBNFT") {
         paymentToken = IERC20(_paymentToken);
+
         totalCriaturas = 0;
         totalHabilidades = 0;
         totalObjetos = 0;
 
         // Agrega el set inicial de cartas
         _agregarSetCartas(
-            21, // 21 criaturas iniciales
-            11, // 11 Habilidades iniciales
-            11, // 11 objetos iniciales
+            CANTIDAD_CRIATURAS_INICIALES,
+            CANTIDAD_HABILIDADES_INICIALES,
+            CANTIDAD_OBJETOS_INICIALES,
             MAX_SUPPLY
         );
     }
 
-    function _getRandomNumber(uint8 upperBound) private view returns (uint8) {
+    function _getRandomNumber(
+        uint256 upperBound
+    ) private view returns (uint256) {
         bytes32 randomHash = keccak256(
-            abi.encodePacked(block.timestamp, block.prevrandao, msg.sender)
+            abi.encodePacked(
+                block.timestamp,
+                blockhash(block.number - 1),
+                msg.sender
+            )
         );
-        uint256 output = uint256(randomHash) % upperBound;
-        return uint8(output);
+        return uint256(randomHash) % upperBound;
     }
 
     function _getRandomRarity() private view returns (uint8) {
@@ -78,12 +99,7 @@ contract CryptoBeastsNFT is ERC721Enumerable, Ownable, Pausable {
         }
     }
 
-    function mint(address to, uint256 _cardId, uint8 _cardType) private {
-        // to do
-    }
-
     function mint(address to, uint256 _cardId) private {
-        // to do
         require(_tokenIdTracker.current() < MAX_SUPPLY, "No cards left");
         require(cardStock[_cardId] > 0, "No stock left for this card");
 
@@ -94,6 +110,44 @@ contract CryptoBeastsNFT is ERC721Enumerable, Ownable, Pausable {
 
         cards[tokenId] = Card(_cardId, randomRarity);
         cardStock[_cardId] -= 1;
+
+        if (cardStock[_cardId] == 0) {
+            // Eliminar _cardId de la lista de disponibles
+            if (_cardId % 3 == 0) {
+                // Criatura
+                for (uint256 i = 0; i < criaturasDisponibles.length; i++) {
+                    if (criaturasDisponibles[i] == _cardId) {
+                        criaturasDisponibles[i] = criaturasDisponibles[
+                            criaturasDisponibles.length - 1
+                        ];
+                        criaturasDisponibles.pop();
+                        break;
+                    }
+                }
+            } else if (_cardId % 3 == 1) {
+                // Habilidad
+                for (uint256 i = 0; i < habilidadesDisponibles.length; i++) {
+                    if (habilidadesDisponibles[i] == _cardId) {
+                        habilidadesDisponibles[i] = habilidadesDisponibles[
+                            habilidadesDisponibles.length - 1
+                        ];
+                        habilidadesDisponibles.pop();
+                        break;
+                    }
+                }
+            } else {
+                // Objeto
+                for (uint256 i = 0; i < objetosDisponibles.length; i++) {
+                    if (objetosDisponibles[i] == _cardId) {
+                        objetosDisponibles[i] = objetosDisponibles[
+                            objetosDisponibles.length - 1
+                        ];
+                        objetosDisponibles.pop();
+                        break;
+                    }
+                }
+            }
+        }
 
         _safeMint(to, tokenId);
     }
@@ -112,6 +166,7 @@ contract CryptoBeastsNFT is ERC721Enumerable, Ownable, Pausable {
             i += 3
         ) {
             cardStock[i] = stockInicial;
+            criaturasDisponibles.push(i);
         }
 
         // Añadir habilidades al cardStock
@@ -121,6 +176,7 @@ contract CryptoBeastsNFT is ERC721Enumerable, Ownable, Pausable {
             i += 3
         ) {
             cardStock[i] = stockInicial;
+            habilidadesDisponibles.push(i);
         }
 
         // Añadir objetos al cardStock
@@ -130,6 +186,7 @@ contract CryptoBeastsNFT is ERC721Enumerable, Ownable, Pausable {
             i += 3
         ) {
             cardStock[i] = stockInicial;
+            objetosDisponibles.push(i);
         }
 
         // Actualiza las variables de estado
@@ -138,41 +195,21 @@ contract CryptoBeastsNFT is ERC721Enumerable, Ownable, Pausable {
         totalObjetos += cantidadObjetos;
     }
 
-    /* 
-    // Las funciones para mintear una sola carta se eliminan para que tenga
-    // sentido el marketplace
-    function buySpecificCard(
-        uint8 _cardType,
-        uint256 _cardId
-    ) external whenNotPaused {
-        paymentToken.transferFrom(
-            msg.sender,
-            address(this),
-            SPECIFIC_CARD_COST
-        );
-        mint(msg.sender, _cardId, cardType);
+    function buyBoosterPack(uint8 _cardType) external whenNotPaused {
+        require(_cardType >= 1 && _cardType <= 3, "Invalid card type");
+
+        uint256[] memory randomCardIds = _getRandomCardId(_cardType, 5);
+
+        for (uint8 i = 0; i < 5; i++) {
+            mint(msg.sender, randomCardIds[i]);
+        }
+
+        paymentToken.transferFrom(msg.sender, address(this), BOOSTER_PACK_COST);
     }
 
-    function buyRandomCard(uint8 _cardType) external whenNotPaused {
-        paymentToken.transferFrom(msg.sender, address(this), SINGLE_CARD_COST);
-        uint256 randomCardId = _getRandomCardId(_cardType);
-        mint(msg.sender, randomCardId);
-    }
-    */
-
-    function buyRandomDeck() external whenNotPaused {
-        paymentToken.transferFrom(msg.sender, address(this), RANDOM_DECK_COST);
-        for (uint8 i = 0; i < 20; i++) {
-            uint256 randomCreatureId = _getRandomCardId(1);
-            mint(msg.sender, randomCreatureId, 1);
-        }
-        for (uint8 i = 0; i < 10; i++) {
-            uint256 randomAbilityId = _getRandomCardId(2);
-            mint(msg.sender, randomAbilityId, 2);
-
-            uint256 randomObjectId = _getRandomCardId(3);
-            mint(msg.sender, randomObjectId, 3);
-        }
+    // Permite cambiar el token de pago en caso de emergencia
+    function updatePaymentToken(address _paymentToken) external onlyOwner {
+        paymentToken = IERC20(_paymentToken);
     }
 
     function burn(uint256 tokenId) external {
@@ -180,15 +217,58 @@ contract CryptoBeastsNFT is ERC721Enumerable, Ownable, Pausable {
             ownerOf(tokenId) == msg.sender,
             "Only the owner can burn this token"
         );
+        // Verifique que el contrato tiene suficiente saldo para pagar la recompensa
+        require(
+            paymentToken.balanceOf(address(this)) >= BURN_REWARD,
+            "Contract has insufficient balance to pay reward"
+        );
+
+        uint256 currentTime = block.timestamp;
+        uint256 userLastBurnTime = _lastBurnTime[msg.sender];
+
+        if (currentTime - userLastBurnTime > burnTimeFrame) {
+            // Reinicia el conteo de cartas quemadas si ha pasado el período de tiempo
+            _burnedCards[msg.sender] = 0;
+            _lastBurnTime[msg.sender] = currentTime;
+        }
+
+        require(
+            _burnedCards[msg.sender] < burnLimit,
+            "Burn limit reached for this time frame"
+        );
+
         _burn(tokenId);
+
+        _burnedCards[msg.sender] += 1;
 
         uint256 rewardAmount = BURN_REWARD;
         paymentToken.transfer(msg.sender, rewardAmount);
     }
 
-    function _getRandomCardId(uint8 _cardType) private view returns (uint256) {
-        // Implementa una función para obtener un cardId aleatorio según el tipo de carta
-        // Ten en cuenta que debe haber stock disponible de la carta seleccionada
+    function _getRandomCardId(
+        uint8 _cardType,
+        uint256 _numCards
+    ) private view returns (uint256[] memory) {
+        uint256[] memory cardIds = new uint256[](_numCards);
+        for (uint256 i = 0; i < _numCards; i++) {
+            if (_cardType == 1) {
+                uint256 randomIndex = _getRandomNumber(
+                    criaturasDisponibles.length
+                );
+                cardIds[i] = criaturasDisponibles[randomIndex];
+            } else if (_cardType == 2) {
+                uint256 randomIndex = _getRandomNumber(
+                    habilidadesDisponibles.length
+                );
+                cardIds[i] = habilidadesDisponibles[randomIndex];
+            } else {
+                uint256 randomIndex = _getRandomNumber(
+                    objetosDisponibles.length
+                );
+                cardIds[i] = objetosDisponibles[randomIndex];
+            }
+        }
+        return cardIds;
     }
 
     function remainingCards(uint256 _cardId) external view returns (uint256) {
@@ -202,7 +282,7 @@ contract CryptoBeastsNFT is ERC721Enumerable, Ownable, Pausable {
     }
 
     // Función pública para agregar nuevos sets de cartas, restringida al propietario del contrato
-    function agregarSetCartas(
+    function addCardsSet(
         uint256 cantidadCriaturas,
         uint256 cantidadHabilidades,
         uint256 cantidadObjetos,
