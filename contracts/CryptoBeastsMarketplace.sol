@@ -1,76 +1,129 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
 
-contract CryptoBeastsMarketplace {
-    address public nonFungibleTokenAddress;
-    address public tokenAddress;
-
-    uint256 private orderId;
+contract CryptoBeastsMarketplace is
+    ERC721Holder,
+    ReentrancyGuard,
+    Ownable,
+    Pausable
+{
+    IERC20 private _beastCoin;
+    IERC721 private _beastNFT;
+    uint256 private _feePercentage;
 
     struct Offer {
         bool isForSale;
-        uint256 tokenId;
-        address seller;
         uint256 price;
-        uint256 index;
+        address seller;
     }
 
-    mapping(uint256 => Offer) public tokenIdToOffer;
-    mapping(uint256 => uint256) private tokenPrice;
+    mapping(uint256 => Offer) private _tokenOffers;
 
-    event TokenOffered(
+    event TokenOfferCreated(
         uint256 indexed tokenId,
         uint256 price,
         address indexed seller
     );
-    event TokenSold(
+    event TokenOfferCancelled(uint256 indexed tokenId);
+    event TokenPurchased(
         uint256 indexed tokenId,
         uint256 price,
         address indexed buyer,
         address indexed seller
     );
 
-    constructor(address _nonFungibleTokenAddress, address _tokenAddress) {
-        nonFungibleTokenAddress = _nonFungibleTokenAddress;
-        tokenAddress = _tokenAddress;
+    constructor(
+        address beastCoinAddress,
+        address beastNFTAddress,
+        uint256 feePercentage
+    ) {
+        _beastCoin = IERC20(beastCoinAddress);
+        _beastNFT = IERC721(beastNFTAddress);
+        _feePercentage = feePercentage;
     }
 
-    function offerToken(uint256 _tokenId, uint256 _price) public {
-        IERC721 nonFungibleToken = IERC721(nonFungibleTokenAddress);
+    function createTokenOffer(
+        uint256 tokenId,
+        uint256 price
+    ) external whenNotPaused {
         require(
-            nonFungibleToken.ownerOf(_tokenId) == msg.sender,
-            "You must own the token to offer it for sale"
+            _beastNFT.ownerOf(tokenId) == msg.sender,
+            "Only the owner can create offers."
         );
+        _beastNFT.safeTransferFrom(msg.sender, address(this), tokenId);
 
-        nonFungibleToken.transferFrom(msg.sender, address(this), _tokenId);
+        _tokenOffers[tokenId] = Offer({
+            isForSale: true,
+            price: price,
+            seller: msg.sender
+        });
 
-        Offer memory offer = Offer(
-            true,
-            _tokenId,
-            msg.sender,
-            _price,
-            orderId++
-        );
-        tokenIdToOffer[_tokenId] = offer;
-
-        emit TokenOffered(_tokenId, _price, msg.sender);
+        emit TokenOfferCreated(tokenId, price, msg.sender);
     }
 
-    function buyToken(uint256 _tokenId) public {
-        Offer memory offer = tokenIdToOffer[_tokenId];
-        require(offer.isForSale, "Token is not for sale");
+    function cancelTokenOffer(uint256 tokenId) external {
+        require(
+            _tokenOffers[tokenId].seller == msg.sender,
+            "Only the seller can cancel offers."
+        );
 
-        IERC20 token = IERC20(tokenAddress);
-        token.transferFrom(msg.sender, offer.seller, offer.price);
+        _beastNFT.safeTransferFrom(address(this), msg.sender, tokenId);
 
-        IERC721 nonFungibleToken = IERC721(nonFungibleTokenAddress);
-        nonFungibleToken.transferFrom(address(this), msg.sender, _tokenId);
+        delete _tokenOffers[tokenId];
+        emit TokenOfferCancelled(tokenId);
+    }
 
-        delete tokenIdToOffer[_tokenId];
+    function buyToken(uint256 tokenId) external whenNotPaused nonReentrant {
+        Offer storage offer = _tokenOffers[tokenId];
+        require(offer.isForSale, "Token is not for sale.");
 
-        emit TokenSold(_tokenId, offer.price, msg.sender, offer.seller);
+        uint256 fee = (offer.price * _feePercentage) / 100;
+        uint256 sellerPayment = offer.price - fee;
+
+        _beastCoin.transferFrom(msg.sender, address(this), fee);
+        _beastCoin.transferFrom(msg.sender, offer.seller, sellerPayment);
+
+        _beastNFT.safeTransferFrom(address(this), msg.sender, tokenId);
+
+        delete _tokenOffers[tokenId];
+        emit TokenPurchased(tokenId, offer.price, msg.sender, offer.seller);
+    }
+
+    function withdrawFees() external onlyOwner {
+        uint256 balance = _beastCoin.balanceOf(address(this));
+        _beastCoin.transfer(owner(), balance);
+    }
+
+    function getTokenOffer(
+        uint256 tokenId
+    ) external view returns (Offer memory) {
+        return _tokenOffers[tokenId];
+    }
+
+    function setFeePercentage(uint256 feePercentage) external onlyOwner {
+        _feePercentage = feePercentage;
+    }
+
+    function getFeePercentage() external view returns (uint256) {
+        return _feePercentage;
+    }
+
+    function getContractTokenBalance() external view returns (uint256) {
+        return _beastCoin.balanceOf(address(this));
+    }
+
+    function pauseContract() external onlyOwner {
+        _pause();
+    }
+
+    function unpauseContract() external onlyOwner {
+        _unpause();
     }
 }
