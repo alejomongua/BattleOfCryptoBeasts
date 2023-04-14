@@ -15,16 +15,18 @@ def deploy_contracts(dev):
 
     reserves_address = os.getenv('RESERVES_ACCOUNT')
     # Desplegar el token ERC20
-    cryptobeastscoin = CryptoBeastsCoin.deploy(reserves_address, {'from': dev})
+    cryptobeastscoin = CryptoBeastsCoin.deploy(
+        reserves_address, {'from': dev}, publish_source=True)
 
     # Desplegar el token ERC721
     cryptobeastsnft = CryptoBeastsNFT.deploy(
-        cryptobeastscoin.address, {'from': dev})
+        cryptobeastscoin.address, {'from': dev}, publish_source=True)
 
     # Desplegar el CryptoBeastsMarketplace
     percentage_fee = 10
     CryptoBeastsmarketplace = CryptoBeastsMarketplace.deploy(
-        cryptobeastscoin.address, cryptobeastsnft.address, percentage_fee, {'from': dev})
+        cryptobeastscoin.address, cryptobeastsnft.address, percentage_fee,
+        {'from': dev}, publish_source=True)
 
     print(f"Token ERC20 desplegado en: {cryptobeastscoin.address}")
     print(f"Token ERC721 desplegado en: {cryptobeastsnft.address}")
