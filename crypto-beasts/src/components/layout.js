@@ -1,22 +1,28 @@
 import '../App.css';
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, Link, useLocation  } from "react-router-dom";
 
-const Layout = () => {
+const Layout = ({
+  onLogout
+}) => {
+  const location = useLocation(); 
   return (
     <>
       <nav>
         <ul class="listMenu">
           <li>
-            <Link to="/game">Play</Link>
+            <Link to="/dashboard" className={`link ${"/dashboard" === location.pathname ? "active" : ""}`}>Dashboard</Link>
           </li>
           <li>
-            <Link to="/">Dashboard</Link>
-          </li>          
-          <li>
-            <Link to="/">Friends</Link>
+            <Link to="/game" className={`link ${"/game" === location.pathname ? "active" : ""}`}>Play</Link>
           </li>
           <li>
-            <Link to="/">Store</Link>
+            <Link to="/friends" className={`link ${"/friends" === location.pathname ? "active" : ""}`}>Friends</Link>
+          </li>
+          <li>
+            <Link to="/store" className={`link ${"/store" === location.pathname ? "active" : ""}`}>Store</Link>
+          </li>
+          <li>
+            <Link to="/" className={`link`} onClick={onLogout}>Salir</Link>
           </li>
         </ul>
       </nav>

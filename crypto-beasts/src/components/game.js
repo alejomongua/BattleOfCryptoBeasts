@@ -6,7 +6,6 @@ const Game = () => {
   const [game, setGame] = useState(undefined);
   
   useEffect(()=>{
-    console.log("wtf")
     if(game !== undefined) return;
 
     const initPhaser = async () =>{
