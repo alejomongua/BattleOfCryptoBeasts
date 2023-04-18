@@ -21,7 +21,6 @@ venv/
 .env
 
 node_modules/
-.env
 .history
 .hypothesis/
 build/

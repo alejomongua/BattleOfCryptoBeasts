@@ -5,7 +5,7 @@ from brownie import CryptoBeastsNFT, CryptoBeastsCoin, accounts, exceptions
 BOOSTER_PACK_COST = 50 * 10 ** 18
 BURN_REWARD = 7 * 10 ** 18
 
-INITIAL_CARD_STOCK = 100_000
+INITIAL_CARD_STOCK = 100
 
 
 @pytest.fixture
@@ -85,16 +85,23 @@ def test_buy_booster_pack(setup):
 
     card_counts = {1: 0, 2: 0, 3: 0}
 
+    token_ids = []
     for event in transfer_events:
         if event["from"] != "0x0000000000000000000000000000000000000000":
             continue
         assert event["to"] == buyer
         card_id = nft_contract.cards(event["tokenId"])["cardId"]
         assert card_id % 3 == card_type - 1
+        token_ids.append(event["tokenId"])
+
+    unique_token_ids = list(set(token_ids))
 
     # Intenta comprar una baraja sin suficientes tokens y comprueba si falla
     with pytest.raises(exceptions.VirtualMachineError):
         nft_contract.buyBoosterPack(1, {"from": accounts[2]})
+
+    assert len(token_ids) == 5, "El número de cartas generadas no es correcto"
+    assert len(unique_token_ids) > 1, "Se generó la misma carta 5 veces"
 
 
 def test_burn_card(setup):

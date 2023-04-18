@@ -16,7 +16,7 @@ contract CryptoBeastsNFT is ERC721Enumerable, Ownable, Pausable {
     uint256 public constant BURN_REWARD = 7 * 10 ** 18;
 
     // Suministro del grupo inicial
-    uint256 private constant MAX_SUPPLY = 100_000;
+    uint256 private constant MAX_SUPPLY = 100;
     uint256 private constant CANTIDAD_CRIATURAS_INICIALES = 21;
     uint256 private constant CANTIDAD_HABILIDADES_INICIALES = 11;
     uint256 private constant CANTIDAD_OBJETOS_INICIALES = 11;
@@ -36,6 +36,7 @@ contract CryptoBeastsNFT is ERC721Enumerable, Ownable, Pausable {
     struct Card {
         // cardType: 0: Criatura, 1: Habilidad, 2: Objeto, es el módulo 3 del cardId
         uint256 cardId;
+        // string imageURI;
         uint8 rarity;
     }
 
@@ -198,9 +199,8 @@ contract CryptoBeastsNFT is ERC721Enumerable, Ownable, Pausable {
     function buyBoosterPack(uint8 _cardType) external whenNotPaused {
         require(_cardType >= 1 && _cardType <= 3, "Invalid card type");
 
-        uint256[] memory randomCardIds = _getRandomCardId(_cardType, 5);
-
         for (uint8 i = 0; i < 5; i++) {
+            uint256[] memory randomCardIds = _getRandomCardId(_cardType, 5);
             mint(msg.sender, randomCardIds[i]);
         }
 

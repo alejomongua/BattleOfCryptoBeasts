@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract CryptoBeastsCoin is ERC20, Ownable {
-    uint256 private constant TOTAL_SUPPLY = 100_000_000 * 10 ** 18; // 1,000,000 tokens with 18 decimal places
+    uint256 private constant TOTAL_SUPPLY = 100_000_000 * 10 ** 18; // 100,000,000 tokens with 18 decimal places
     uint256 private constant FOUNDERS_ALLOCATION = (TOTAL_SUPPLY * 10) / 100; // 10% for founders
     uint256 private constant RESERVES_ALLOCATION = (TOTAL_SUPPLY * 20) / 100; // 20% for reserves
     uint256 private constant REWARDS_ALLOCATION = (TOTAL_SUPPLY * 70) / 100; // 70% for player rewards
