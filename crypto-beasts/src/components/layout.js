@@ -8,7 +8,7 @@ const Layout = ({
   return (
     <>
       <nav>
-        <ul class="listMenu">
+        <ul className="listMenu">
           <li>
             <Link to="/dashboard" className={`link ${"/dashboard" === location.pathname ? "active" : ""}`}>Dashboard</Link>
           </li>

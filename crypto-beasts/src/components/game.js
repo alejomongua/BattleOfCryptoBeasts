@@ -19,7 +19,7 @@ const Game = () => {
         title: 'Crypto Beasts',
         parent: 'game-content',
         width: 1000,
-        height: 600,
+        height: 700,
         physics: {
           default: 'arcade'
         },

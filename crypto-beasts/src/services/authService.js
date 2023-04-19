@@ -7,7 +7,7 @@ const AuthService = {
     handleLogin: async (address, auth) => {
       try{
         const baseUrl = process.env.REACT_APP_CRYPTO_BEAST_BACK_END;
-        const response = await axios.get(`${baseUrl}/message?address=${address}`);
+        const response = await axios.get(`${baseUrl}beast/message?address=${address}`);
         const messageToSign = response?.data?.messageToSign;
     
         if (!messageToSign) {
@@ -18,7 +18,7 @@ const AuthService = {
         const signature = await web3.eth.personal.sign(messageToSign, address);
     
         const jwtResponse = await axios.get(
-          `${baseUrl}/jwt?address=${address}&signature=${signature}`
+          `${baseUrl}beast/jwt?address=${address}&signature=${signature}`
         );
     
         const customToken = jwtResponse?.data?.customToken;

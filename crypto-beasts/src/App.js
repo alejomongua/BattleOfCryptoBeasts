@@ -1,8 +1,9 @@
 import Web3 from "web3";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { initializeApp } from "firebase/app";
 import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import AuthService from "./services/authService";
+import ContractService from "./services/contractService";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "./App.css";
 import Login from "./components/login";
@@ -31,10 +32,14 @@ const App = () => {
   const [isAuth, setIsAuth] = useState(false);
   const [logOut, setLogOut] = useState(false);
   
-  onAuthStateChanged(auth, (user) => {
+  onAuthStateChanged(auth, async (user) => {
     if (user) {
       const uid = user.uid;
-      if(!isAuth && !logOut) setIsAuth(true);
+      if(!isAuth && !logOut) {
+        const cards = await ContractService.getCards("0x1f0ffc5235BA76442C77C73F8561860B2E061c70")
+        sessionStorage.setItem("cards", JSON.stringify(cards));
+        setIsAuth(true);
+      }
     } 
   });
 

@@ -3,6 +3,8 @@ import Phaser from 'phaser'
 const CARD_PROPERTIES = {
   w: 102,
   h: 150,
+  board_w: 80,
+  board_h: 117,
   idle: 'card'
 }
 
@@ -11,7 +13,7 @@ export default class Card extends Phaser.Physics.Arcade.Sprite {
         return CARD_PROPERTIES;
     }
     
-    constructor(scene,x,y,id, handX, handY, props) {
+    constructor(scene,x,y,id, handX, handY, props, urlImg = CARD_PROPERTIES.idle) {
         super(scene, x, y, id)
 
         this.scene = scene;
@@ -30,7 +32,8 @@ export default class Card extends Phaser.Physics.Arcade.Sprite {
         this.props = props;
 
         //Create card sprite
-        this.card = this.scene.physics.add.sprite(x, y, CARD_PROPERTIES.idle, 0).setName(`card_${this.id}`);
+        this.card = this.scene.physics.add.sprite(x, y, urlImg).setName(`card_${this.id}`);
+        this.card.setScale(0.15)
         this.card.setBounce(1, 1);
         this.card.setInteractive();
 
@@ -63,8 +66,9 @@ export default class Card extends Phaser.Physics.Arcade.Sprite {
                     const cell = this.scene.board.checkPlayed(pointer, this.card, this.props);
                     if(cell !== undefined){
                         if(!cell.err){
+                            const scale = 0.1;
                             this.enabled = false;
-                            this.resetPos(cell.x + (this.card.width/2), cell.y + (this.card.height/2));
+                            this.resetPos(cell.x + ((this.card.width*scale)/2), cell.y + ((this.card.height*scale)/2), scale);
                         }else{
                             console.log(cell.err)
                             this.resetPos();
@@ -73,22 +77,20 @@ export default class Card extends Phaser.Physics.Arcade.Sprite {
                         this.resetPos();
                     }
                 }
-                
-                this.scene.selectedCard = '';
             });
 
             //Mouse over
             this.scene.input.on('gameobjectover', (pointer, gameObject) => {
                 if(this.code === gameObject.name && this.scene.selectedCard === '' && this.enabled){
-                    this.card.setScale(1.2);
+                    this.card.setScale(0.20);
                     this.scene.cardDef.setProps(this.props)
                 }
             });
 
             //Mouse out
             this.scene.input.on('gameobjectout', (pointer, gameObject) => {
-                if(this.code === gameObject.name)
-                    this.card.setScale(1);
+                if(this.code === gameObject.name && this.enabled)
+                    this.card.setScale(0.15);
             });
             
             this.setHandPos();
@@ -102,6 +104,7 @@ export default class Card extends Phaser.Physics.Arcade.Sprite {
             if (distance < tolerance){
                 this.card.body.reset(this.basePos.x, this.basePos.y);
                 this.enabled = true;
+                this.scene.arrangeHand();
             }
         }else{
             //Move around
@@ -113,11 +116,19 @@ export default class Card extends Phaser.Physics.Arcade.Sprite {
     }
 
     /* Reset hand position */
-    resetPos(x = this.basePos.x, y = this.basePos.y) {
-        this.card.setScale(1);
+    resetPos(x = this.basePos.x, y = this.basePos.y, scale = 0.25) {
+        this.card.setScale(scale);
         this.selected = false;
         this.card.x = x;
         this.card.y = y;
+
+        if(scale !== 1){
+            this.scene.updateHand(this.card,"remove");
+            setTimeout(()=>{
+                this.scene.drawCard();
+            },2000, this)
+        }
+        this.scene.selectedCard = '';
     }
 
     /* Move from deck to hand */

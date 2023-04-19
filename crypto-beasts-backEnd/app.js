@@ -14,6 +14,7 @@ var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
 var beastRouter = require('./routes/beast');
+var contractRouter = require('./routes/contracts');
 
 var app = express();
 
@@ -27,6 +28,7 @@ app.use(cors());
 
 app.use('/', indexRouter);
 app.use('/beast', beastRouter);
+app.use('/contract', contractRouter);
 
 app.use(function(req, res, next) {
     next(createError(404));
