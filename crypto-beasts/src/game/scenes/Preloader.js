@@ -11,6 +11,7 @@ export default class Preloader extends Scene{
         this.load.image(`card_${cards[0].cardId}`, cards[0].urlImg);
 
         this.load.image('defCard', 'images/cards/defCard.png');
+        this.load.image('msgBG', 'images/cards/msgBG.png');
         this.load.image('stats', 'images/cards/stats.png');
         this.load.spritesheet('card', 'images/cards/card_test.png',  {
             frameWidth: 204,

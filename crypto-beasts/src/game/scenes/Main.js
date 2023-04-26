@@ -3,6 +3,7 @@ import Board from '../objects/Board'
 import Card from '../objects/Card'
 import CardDetail from '../objects/CardDetail'
 import Stats from '../objects/Stats'
+import Message from '../objects/Message'
 
 export default class Main extends Scene{
     
@@ -115,6 +116,9 @@ export default class Main extends Scene{
         //Stats
         this.stats = new Stats(this);
         this.stats.setStats(this.initStats)
+
+        //Stats
+        this.msg = new Message(this);
 
         //Hand
         const initCards = 5;
