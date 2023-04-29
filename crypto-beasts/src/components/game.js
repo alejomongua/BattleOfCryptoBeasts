@@ -1,6 +1,7 @@
 import '../App.css';
 import { Game as GameType } from 'phaser'
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+
 
 const Game = () => {
   const [game, setGame] = useState(undefined);
@@ -12,6 +13,7 @@ const Game = () => {
       const Phaser = await import('phaser');
 
       const { default: Preloader } = await import('../game/scenes/Preloader');
+      const { default: Wait } = await import('../game/scenes/Wait');
       const { default: Main } = await import('../game/scenes/Main');
 
       const phaserGame = new Phaser.Game({
@@ -25,6 +27,7 @@ const Game = () => {
         },
         scene: [
           Preloader,
+          Wait,
           Main
         ],
         backgroundColor: '#262626'

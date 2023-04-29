@@ -38,6 +38,7 @@ const App = () => {
       if(!isAuth && !logOut) {
         const cards = await ContractService.getCards("0x1f0ffc5235BA76442C77C73F8561860B2E061c70")
         sessionStorage.setItem("cards", JSON.stringify(cards));
+        sessionStorage.setItem("userID", uid);
         setIsAuth(true);
       }
     } 

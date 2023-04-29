@@ -14,7 +14,7 @@ export default class CardDetail extends Phaser.Physics.Arcade.Sprite {
         
         //Create def card sprite
         this.frame = this.scene.add.image(10, 10, CARD_PROPERTIES.idle).setOrigin(0);
-        this.card = this.scene.add.image(40, 65, 'card', 0).setOrigin(0);
+        //this.card = this.scene.add.image(40, 65, 'card', 0).setOrigin(0);
         
         // this.card.setBounce(1, 1);
         // this.card.setInteractive();

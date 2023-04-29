@@ -23,6 +23,18 @@ export default class Message extends Phaser.Physics.Arcade.Sprite {
           .setColor('#000000')
           .setOrigin(0)
 
+        //End turn button
+        this.endTurn = this.scene.add.text(145, 690, 'Terminar turno',{ fixedWidth: 270})
+            .setAlign('center')
+            .setOrigin(0.5)
+            .setPadding(10)
+            .setVisible(false)
+            .setStyle({ backgroundColor: '#111' })
+            .setInteractive({ useHandCursor: true })
+            .on('pointerdown', ()=>{this.changeVisibility(); this.scene.endTurn();})
+            .on('pointerover', () => this.endTurn.setStyle({ fill: '#f39c12' }))
+            .on('pointerout', () => this.endTurn.setStyle({ fill: '#FFF' }))
+
         this.create();
     }
 
@@ -52,5 +64,9 @@ export default class Message extends Phaser.Physics.Arcade.Sprite {
     
     update() {
         
+    }
+
+    changeVisibility(){
+        this.endTurn.setVisible(!this.endTurn.visible)
     }
 }

@@ -14,12 +14,12 @@ export default class Preloader extends Scene{
         this.load.image('msgBG', 'images/cards/msgBG.png');
         this.load.image('stats', 'images/cards/stats.png');
         this.load.spritesheet('card', 'images/cards/card_test.png',  {
-            frameWidth: 204,
-            frameHeight: 299
+            frameWidth: 816,
+            frameHeight: 1200
         });
     }
 
     create(){
-        this.scene.start('main');
+        this.scene.start('wait');
     }
 }

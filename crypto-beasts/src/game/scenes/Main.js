@@ -10,16 +10,23 @@ export default class Main extends Scene{
     constructor(){
         super('main')
         this.deck = undefined;//Visual Deck
+        this.enemyCards = [];//Enemy board cards
         this.defDeck = [];//Deck to control cards draw
         this.hand = [];
         this.drawn = 0;
         this.selectedCard = '';
+        this.playEnabled = false;
 
         //Constants
         this.handPosInit = {x:440,y:640};
-        this.initStats = {hp: 50, ep: 10, hp_enemy: 50, ep_enemy: 10};
+        this.initStats = {hp: 50, ep: 0, hp_enemy: 50, ep_enemy: 15};
 
+        //Socket instance
+        this.socket = undefined;       
+    }
 
+    init(data){
+        this.socket = data.socket;
     }
 
     preload(){
@@ -27,6 +34,7 @@ export default class Main extends Scene{
     }
     
     create(){
+
         //TODO ==> Replace with returned deck def from metamask
         const deckDef = [
             {
@@ -125,7 +133,33 @@ export default class Main extends Scene{
         for(var i = 0;i<initCards;i++){
             this.drawCard();
         }
-        //this.updateHand();
+        
+
+        /*Socket definition */
+        //On start turn
+        this.socket.on("start_turn", (data)=>{
+            this.msg.changeVisibility();
+            setTimeout(()=>{
+                this.playEnabled = true;
+                this.drawCard();
+            },1000, this)
+        });
+
+        //On Receive enemy play
+        this.socket.on("enemy_play", (data)=>{
+            //Set enemy card on board
+            const newX = 6 - ((data.posPlayed.x - 360)/80);
+            const tmpY = (data.posPlayed.y - 70)/117;
+            const newY = tmpY - ((tmpY-2)*3) - 1;
+            const offSet = {
+                x: -1,
+                y: 15
+            }
+            this.enemyCards.push(new Card(this, 360+(newX*80) + offSet.x,(newY*117) + offSet.y, 0, undefined, undefined, undefined, undefined, 0.095));
+            
+            //Update energy stats
+            this.stats.setStats({...this.stats.stats, ep_enemy: this.stats.stats.ep_enemy - data.cardInfo.energy})//Update enemy energy
+        });
     }
 
     update(){
@@ -148,6 +182,8 @@ export default class Main extends Scene{
         const newCard = new Card(this,930,610, this.defDeck[this.drawn].id, this.handPosInit.x + (cardSpacing * drawn),this.handPosInit.y, this.defDeck[this.drawn], "card_57");
         this.updateHand(newCard);
         this.drawn++;
+        //Update energy stats
+        this.stats.setStats({...this.stats.stats, ep: this.stats.stats.ep + 3})//Update energy
     }
 
     updateHand(card, action = "add"){
@@ -164,7 +200,17 @@ export default class Main extends Scene{
             const cardSpacing = ((this.hand.length)*10)+(30-((this.hand.length-5)*20));
             this.hand.map((card,i)=>{
                 card.card.x =  this.handPosInit.x + (cardSpacing * i);
+                card.basePos.x = card.card.x;
             })
         }
+    }
+
+    endTurn(){
+        this.playEnabled = false;
+        this.socketMsg("end_turn", true);    
+    }
+
+    socketMsg(event, msg){
+        this.socket.emit(event,msg);
     }
 }

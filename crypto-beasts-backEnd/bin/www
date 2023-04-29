@@ -7,6 +7,8 @@
 var app = require('../app');
 var debug = require('debug')('digitalsignature:server');
 var http = require('http');
+const { Server } = require("socket.io");
+
 
 /**
  * Get port from environment and store in Express.
@@ -19,13 +21,27 @@ app.set('port', port);
  * Create HTTP server.
  */
 
-var server = http.createServer(app);
+const server = http.createServer(app);
+
+/**
+ * Create Socket io listener.
+ */
+const socketIO = new Server(server, {
+  cors: {
+    origin: process.env.FRONT_END_URI,
+    methods:['GET','POST']
+  }
+})
+//Socket io controller
+require('../controllers/socketController.js')(socketIO)
 
 /**
  * Listen on provided port, on all network interfaces.
  */
+server.listen(port, ()=>{
+  console.log(`Listening on port: ${port}`);
+});
 
-server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
 
