@@ -32,6 +32,7 @@ contract CryptoBeastsNFT is ERC721Enumerable, Ownable, Pausable {
     uint256 public totalObjetos;
 
     Counters.Counter private _tokenIdTracker;
+    mapping(uint256 => mapping(uint8 => string)) private _cardURIs;
 
     struct Card {
         // cardType: 0: Criatura, 1: Habilidad, 2: Objeto, es el módulo 3 del cardId
@@ -302,5 +303,28 @@ contract CryptoBeastsNFT is ERC721Enumerable, Ownable, Pausable {
 
     function unpauseContract() external onlyOwner {
         _unpause();
+    }
+
+    function setCardURI(
+        uint256 cardId,
+        uint8 rarity,
+        string calldata uri
+    ) external onlyOwner {
+        _cardURIs[cardId][rarity] = uri;
+    }
+
+    function tokenURI(
+        uint256 tokenId
+    ) public view virtual override returns (string memory) {
+        require(
+            _exists(tokenId),
+            "ERC721Metadata: URI query for nonexistent token"
+        );
+
+        Card memory card = cards[tokenId];
+        string memory uri = _cardURIs[card.cardId][card.rarity];
+        require(bytes(uri).length > 0, "ERC721Metadata: URI not set for token");
+
+        return uri;
     }
 }
