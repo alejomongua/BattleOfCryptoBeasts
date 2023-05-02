@@ -6,7 +6,7 @@ export const PROPERTIES = {
   idle: 'stats'
 }
 
-export default class Card extends Phaser.Physics.Arcade.Sprite {
+export default class Stats extends Phaser.Physics.Arcade.Sprite {
     constructor(scene) {
         super(scene)
 

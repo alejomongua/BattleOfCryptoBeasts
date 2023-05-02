@@ -3,10 +3,17 @@ var router = express.Router();
 const beastController = require('../controllers/beastController')
 
 /**
- * GET /TODO
+ * GET /message
  * 
 */
-//router.get('/', beastController.TODO);
+router.get('/message', beastController.getMessageToSign);
+
+
+/**
+ * GET /jwt
+ * 
+*/
+router.get('/jwt', beastController.jwt);
 
 
 

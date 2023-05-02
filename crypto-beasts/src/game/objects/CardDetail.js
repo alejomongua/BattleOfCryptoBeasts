@@ -6,14 +6,16 @@ export const CARD_PROPERTIES = {
   idle: 'defCard'
 }
 
-export default class Card extends Phaser.Physics.Arcade.Sprite {
+export default class CardDetail extends Phaser.Physics.Arcade.Sprite {
     constructor(scene) {
         super(scene)
 
         this.scene = scene;
         
         //Create def card sprite
-        this.card = this.scene.add.image(10, 10, CARD_PROPERTIES.idle).setOrigin(0);
+        this.frame = this.scene.add.image(10, 10, CARD_PROPERTIES.idle).setOrigin(0);
+        //this.card = this.scene.add.image(40, 65, 'card', 0).setOrigin(0);
+        
         // this.card.setBounce(1, 1);
         // this.card.setInteractive();
 
