@@ -8,7 +8,9 @@ export default class Preloader extends Scene{
 
     preload(){
         const cards = JSON.parse(sessionStorage.getItem("cards"));
-        this.load.image(`card_${cards[0].cardId}`, cards[0].urlImg);
+        cards.map(card=>{
+            this.load.image(`card_${card.tokenId}`, card.urlImg);
+        })
 
         this.load.image('defCard', 'images/cards/defCard.png');
         this.load.image('msgBG', 'images/cards/msgBG.png');

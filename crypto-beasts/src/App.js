@@ -36,7 +36,7 @@ const App = () => {
     if (user) {
       const uid = user.uid;
       if(!isAuth && !logOut) {
-        const cards = await ContractService.getCards("0x1f0ffc5235BA76442C77C73F8561860B2E061c70")
+        const cards = await ContractService.getCards(uid)
         sessionStorage.setItem("cards", JSON.stringify(cards));
         sessionStorage.setItem("userID", uid);
         setIsAuth(true);
