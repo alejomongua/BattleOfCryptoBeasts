@@ -65,9 +65,9 @@ export default class Board extends Phaser.Physics.Arcade.Sprite {
                 return { err: "Celda enemiga"};
 
             //Row validation
-            if(cellIndex.j === 2 && cardProps.type !== "creature")
+            if(cellIndex.j === 2 && cardProps.type !== 1)
                 return { err: "Espacio de monstruos"};
-            if(cellIndex.j === 3 && cardProps.type === "creature")
+            if(cellIndex.j === 3 && cardProps.type === 1)
                 return { err: "Espacio de objetos y efectos"};
 
             if(cellTmp.card === ""){

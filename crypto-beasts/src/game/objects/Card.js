@@ -13,7 +13,7 @@ export default class Card extends Phaser.Physics.Arcade.Sprite {
         return CARD_PROPERTIES;
     }
     
-    constructor(scene,x,y,id, handX, handY, props, urlImg = CARD_PROPERTIES.idle, scale=0.12) {
+    constructor(scene,x,y,id, handX, handY, props, urlIMG, imgID = CARD_PROPERTIES.idle, scale=0.12) {
         super(scene, x, y, id)
 
         this.scene = scene;
@@ -29,10 +29,11 @@ export default class Card extends Phaser.Physics.Arcade.Sprite {
             x: handX,
             y: handY
         }
+        this.urlIMG = urlIMG;
         this.props = props;
 
         //Create card sprite
-        this.card = this.scene.physics.add.sprite(x, y, urlImg).setName(`card_${this.id}`);
+        this.card = this.scene.physics.add.sprite(x, y, imgID).setName(`card_${this.id}`);
         this.card.setScale(scale)
         this.card.setBounce(1, 1);
         this.card.setInteractive();
@@ -70,7 +71,7 @@ export default class Card extends Phaser.Physics.Arcade.Sprite {
                 if(this.scene.playEnabled === true && this.selected === true){
                     const cell = this.scene.board.checkPlayed(pointer, this.card, this.props);
                     if(cell !== undefined){
-                        if(!cell.err){
+                        if(!cell.err){//Card was placed on the board
                             const scale = 0.095;
                             this.enabled = false;
                             this.scene.msg.setMsg();
@@ -78,10 +79,10 @@ export default class Card extends Phaser.Physics.Arcade.Sprite {
                             
                             this.scene.socketMsg('card_played', {
                                 cardId: this.id,
-                                cardInfo: this.props,
+                                cardInfo: {...this.props, urlIMG: this.urlIMG},
                                 posPlayed: { x: cell.x + ((this.card.width*scale)/2), y: cell.y - ((this.card.height*scale)/2)}
                             })
-                        }else{
+                        }else{//Error on placement of card
                             this.scene.msg.setMsg(cell.err);
                             this.resetPos();
                         }

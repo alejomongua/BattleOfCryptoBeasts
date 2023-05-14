@@ -17,6 +17,8 @@ export default class Main extends Scene{
         this.selectedCard = '';
         this.playEnabled = false;
 
+        this.turn = 0;
+
         //Constants
         this.handPosInit = {x:440,y:640};
         this.initStats = {hp: 50, ep: 0, hp_enemy: 50, ep_enemy: 15};
@@ -34,9 +36,19 @@ export default class Main extends Scene{
     }
     
     create(){
-
+        const cards = JSON.parse(sessionStorage.getItem("cards"));
+        const deckDef = cards.map(card=>{
+            return {
+                ...card.def,
+                id: card.tokenId,
+                urlIMG: card.urlImg
+            }
+        })
+        if(deckDef.length < 20)
+            deckDef.push(...[...deckDef,...deckDef,...deckDef])
+        
         //TODO ==> Replace with returned deck def from metamask
-        const deckDef = [
+        /*const deckDef = [
             {
                 id:"creat_01",
                 type: "creature",
@@ -107,7 +119,7 @@ export default class Main extends Scene{
                 effect: "",
                 effectDef: "Otorga a una criatura aliada la habilidad de volar, lo que la hace inmune a los ataques de cristuras sin volar"
             }
-        ]
+        ]*/
 
         this.shufleDeck(deckDef);
 
@@ -141,6 +153,7 @@ export default class Main extends Scene{
             this.msg.changeVisibility();
             setTimeout(()=>{
                 this.playEnabled = true;
+                this.turn++;
                 this.drawCard();
             },1000, this)
         });
@@ -155,7 +168,8 @@ export default class Main extends Scene{
                 x: -1,
                 y: 15
             }
-            this.enemyCards.push(new Card(this, 360+(newX*80) + offSet.x,(newY*117) + offSet.y, 0, undefined, undefined, undefined, undefined, 0.095));
+            this.load.image(`card_${data.cardId}`, data.cardInfo.urlIMG);
+            this.enemyCards.push(new Card(this, 360+(newX*80) + offSet.x,(newY*117) + offSet.y, 0, undefined, undefined, undefined, undefined, undefined, 0.095));
             
             //Update energy stats
             this.stats.setStats({...this.stats.stats, ep_enemy: this.stats.stats.ep_enemy - data.cardInfo.energy})//Update enemy energy
@@ -179,7 +193,7 @@ export default class Main extends Scene{
     drawCard(){
         const cardSpacing = 80;
         const drawn = this.hand.length;
-        const newCard = new Card(this,930,610, this.defDeck[this.drawn].id, this.handPosInit.x + (cardSpacing * drawn),this.handPosInit.y, this.defDeck[this.drawn], "card_57");
+        const newCard = new Card(this,930,610, this.defDeck[this.drawn].id, this.handPosInit.x + (cardSpacing * drawn),this.handPosInit.y, this.defDeck[this.drawn], this.defDeck[this.drawn].urlIMG, `card_${this.defDeck[this.drawn].id}`);
         this.updateHand(newCard);
         this.drawn++;
         //Update energy stats

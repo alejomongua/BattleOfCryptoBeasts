@@ -1,5 +1,5 @@
+const admin = require("firebase-admin");
 const cryptoBeastsNFTAbi = require("../abis/CryptoBeastsNFT.json");
-const cardDef = require("../cards_urls.json");
 const Web3 = require("web3");
 const dotenv = require("dotenv");
 
@@ -25,14 +25,24 @@ exports.getCards = async (req,res) => {
 
   const getCard = async (cryptoBeastsNFT, id) => {
     const card = await cryptoBeastsNFT.methods.cards(id).call();
+    const nft = await cryptoBeastsNFT.methods.tokenURI(id).call();
+    let cardDef = {};
+    await admin.firestore().collection("cards").where("id", "==", card.cardId).get().then(result => {
+      result.forEach((doc) => {
+        cardDef = doc.data();
+      });
+    });
+
     return {
+      tokenId: `${id}_${card.cardId}_${card.rarity}`,
       cardId:card.cardId,
       rarity: card.rarity,
-      urlImg: cardDef[card.cardId]
+      urlImg: nft,
+      def: cardDef
     };
   };
 
-  const providerUrl = `https://sepolia.infura.io/v3/${process.env.WEB3_INFURA_PROJECT_ID}`;
+  const providerUrl = `https://polygon-mumbai.infura.io/v3/${process.env.WEB3_INFURA_PROJECT_ID}`;
   const web3 = new Web3(providerUrl);
   const cryptoBeastsNft = new web3.eth.Contract(cryptoBeastsNFTAbi.abi, cryptoBeastsNFTAddress);
   
