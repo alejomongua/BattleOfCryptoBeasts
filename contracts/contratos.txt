@@ -1,0 +1,7 @@
+Contrato de CryptoBeastsCoin:
+0x6047C4eb98AE6F18ade46876c4c61631DcECC10E
+
+Contrato de CryptoBeastsNFT:
+0x32bD7d48E102cA57e547Fbee947fc514b98f433F
+
+Contrato de Marketplace:
