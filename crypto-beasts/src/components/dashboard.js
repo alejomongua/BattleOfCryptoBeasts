@@ -43,6 +43,22 @@ const Dashboard = () => {
           <Spinner />
         }
         {/*Listado de carta */}
+        {
+          cards.length === 0 &&
+          <div>
+            <span>What are you waiting for?? <br/> Buy your first BoosterPack!!</span>
+            <div>
+              {!isBuying ?
+                <button className='dashboard__buy' onClick={() => buyBoosterPack()}>Buy Booster Pack</button>
+                :
+                <div className='loadBuy'>
+                  <Spinner />
+                  <span>Check Metamask!</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
         {cards.length > 0 &&
           <div>
             <div className='dashboard__list'>
