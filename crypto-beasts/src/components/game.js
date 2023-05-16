@@ -1,13 +1,17 @@
 import '../App.css';
 import { Game as GameType } from 'phaser'
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Link } from "react-router-dom";
 
 
 const Game = () => {
   const [game, setGame] = useState(undefined);
+  const [canPlay, setCanPlay] = useState(true);
   
   useEffect(()=>{
-    if(game !== undefined) return;
+    const cards = JSON.parse(sessionStorage.getItem("cards"));
+    if(cards.length < 20) setCanPlay(false);
+    if(game !== undefined || cards.length < 20) return;
 
     const initPhaser = async () =>{
       const Phaser = await import('phaser');
@@ -41,9 +45,15 @@ const Game = () => {
 
   return (
     <div className="App">
+      { canPlay === true ?
       <div id="game-content" key="game-content">
 
       </div>
+      :
+      <div>
+        You need at least 20 cards to play, go buy some <Link to="/dashboard" className={`link`}>Here</Link>
+      </div>
+      }
     </div>
   );
 }

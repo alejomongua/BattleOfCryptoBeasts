@@ -44,8 +44,6 @@ export default class Main extends Scene{
                 urlIMG: card.urlImg
             }
         })
-        if(deckDef.length < 20)
-            deckDef.push(...[...deckDef,...deckDef,...deckDef])
         
         //TODO ==> Replace with returned deck def from metamask
         /*const deckDef = [

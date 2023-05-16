@@ -1,4 +1,5 @@
 import "../App.css";
+import Spinner from "./spinner";
 
 const Login = ({
   onPressConnect,
@@ -7,14 +8,12 @@ const Login = ({
   return (
     <div className="login">
       { loading ? (
-        <div className="loginConnect">
-          Cargando...
-        </div>
+        <Spinner />
       ) : (
         <div className="loginConnect">
-          Conecta tu billetera para ingresar
+          Connect your wallet to log in
           <button onClick={onPressConnect} className="main-btn">
-            Conectar billetera
+            Connect wallet
           </button>
         </div>
       )}
