@@ -8,6 +8,8 @@ const Dashboard = () => {
   const [selectedCard, setSelectedCard] = useState(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const [isBuying, setIsBuying] = useState(false);
+  const [eventText, setEventText] = useState("Buy Booster Pack");
+  const [event, setEvent] = useState(1);
   const account = sessionStorage.getItem("userID");
 
   const getCards = () =>{
@@ -22,11 +24,17 @@ const Dashboard = () => {
 
   const buyBoosterPack = async () =>{
     setIsBuying(true);
-    const cardType = Math.floor(Math.random() * (3 - 1 + 1) + 1);
-    ContractService.buyBoosterPack(account, cardType).then(()=>{
-      getCards();
-      setIsBuying(false);
-    });
+    if(event === 0){
+      ContractService.approve(account).then(()=>{
+        setIsBuying(false);
+      });
+    }else{
+      const cardType = Math.floor(Math.random() * (3 - 1 + 1) + 1);
+      ContractService.buyBoosterPack(account, cardType).then(()=>{
+        getCards();
+        setIsBuying(false);
+      });
+    }
   }
 
   useEffect(() => {
@@ -34,6 +42,19 @@ const Dashboard = () => {
         getCards()
       }
   }, [account]);
+
+  useEffect(()=>{
+    ContractService.checkAllowance(account).then((val)=>{
+      console.log(val)
+      if(parseInt(val)<(50 * 10 ** 18)){
+        setEventText("Approve Allowance");
+        setEvent(0);
+      }else{
+        setEventText("Buy Booster Pack");
+        setEvent(1);
+      }
+    });
+  },[])
 
   return (
     <div className="App">
@@ -48,8 +69,8 @@ const Dashboard = () => {
           <div>
             <span>What are you waiting for?? <br/> Buy your first BoosterPack!!</span>
             <div>
-              {!isBuying ?
-                <button className='dashboard__buy' onClick={() => buyBoosterPack()}>Buy Booster Pack</button>
+              {!isBuying && !isLoading ?
+                <button className='dashboard__buy' onClick={() => buyBoosterPack()}>{eventText}</button>
                 :
                 <div className='loadBuy'>
                   <Spinner />

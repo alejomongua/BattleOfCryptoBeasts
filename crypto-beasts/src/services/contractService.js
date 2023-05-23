@@ -1,6 +1,8 @@
 import Web3 from "web3";
 import axios from 'axios';
-import abi from './abi/CryptoBeastsNFT.json';
+
+const abiCoin = require('./abi/CryptoBeastsCoin.json');
+const abiNFT = require('./abi/CryptoBeastsNFT.json');
 
 const ContractService = {
 
@@ -15,13 +17,40 @@ const ContractService = {
   },
 
   buyBoosterPack: async (address, cardType) => {
-    const cryptoBeastsNFTAddress = "0xd5CD89477D5b3869375c93b0d18548D834a3dafa";
+    const cryptoBeastsNFTAddress = process.env.REACT_APP_CB_NFT_ADDRESS;
     const web3 = new Web3(window.ethereum);
-    const nftContract = new web3.eth.Contract(abi.abi, cryptoBeastsNFTAddress);
+    const nftContract = new web3.eth.Contract(abiNFT.abi, cryptoBeastsNFTAddress);
     try{
       await nftContract.methods.buyBoosterPack(cardType).send({from: address});
       return "ok";
     }catch(ex){
+      return "err";
+    }
+  },
+
+  approve: async (address) => {
+    const cryptoBeastsNFTAddress = process.env.REACT_APP_CB_NFT_ADDRESS;
+    const cryptoBeastsCOINAddress = process.env.REACT_APP_CB_COIN_ADDRESS;
+    const web3 = new Web3(window.ethereum);
+    const coinContract = new web3.eth.Contract(abiCoin.abi, cryptoBeastsCOINAddress);
+    try{
+      const amm = "1000000000000000000000000";
+      await coinContract.methods.approve(cryptoBeastsNFTAddress, amm).send({from: address});
+      return "ok";
+    }catch(ex){
+      return "err";
+    }
+  },
+
+  checkAllowance: async (address) => {
+    const cryptoBeastsNFTAddress = process.env.REACT_APP_CB_NFT_ADDRESS;
+    const cryptoBeastsCOINAddress = process.env.REACT_APP_CB_COIN_ADDRESS;
+    const web3 = new Web3(window.ethereum);
+    const coinContract = new web3.eth.Contract(abiCoin.abi, cryptoBeastsCOINAddress);
+    try{
+      return await coinContract.methods.allowance(address, cryptoBeastsNFTAddress).call();
+    }catch(ex){
+      console.log(ex)
       return "err";
     }
   }
