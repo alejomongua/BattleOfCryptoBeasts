@@ -9,4 +9,11 @@ const nftController = require('../controllers/nftController')
 */
 router.get('/cards', cardController.getCards);
 
+
+/**
+ * GET /cards
+ * 
+*/
+router.get('/boosterPack', cardController.getBoosterPack);
+
 module.exports = router;

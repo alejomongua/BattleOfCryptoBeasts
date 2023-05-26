@@ -34,8 +34,8 @@ module.exports = (socketIO) => {
                 socket.roomId =room.room;
                 socket.join(room.room);
 
-                socket.to(room.room).emit("match_found");
-                socket.emit("match_found")
+                socket.to(room.room).emit("match_found", room.room);
+                socket.emit("match_found", room.room)
                 
                 setTimeout(()=>{
                     socket.emit("start_turn")

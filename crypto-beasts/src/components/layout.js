@@ -19,10 +19,7 @@ const Layout = ({
             <Link to="/friends" className={`link ${"/friends" === location.pathname ? "active" : ""}`}>Friends</Link>
           </li>
           <li>
-            <Link to="/store" className={`link ${"/store" === location.pathname ? "active" : ""}`}>Store</Link>
-          </li>
-          <li>
-            <Link to="/" className={`link`} onClick={onLogout}>Salir</Link>
+            <Link to="/" className={`link`} onClick={onLogout}>Log out</Link>
           </li>
         </ul>
       </nav>

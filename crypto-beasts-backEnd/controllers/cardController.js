@@ -9,7 +9,12 @@ dotenv.config();
 const cryptoBeastsNFTAddress = process.env.BEASTS_NFT_ADDRESS; 
 
 exports.getCards = async (req,res) => {
+  
   const addr = req.query.userAddres;
+
+  const providerUrl = `https://polygon-mumbai.infura.io/v3/${process.env.WEB3_INFURA_PROJECT_ID}`;
+  const web3 = new Web3(providerUrl);
+  const cryptoBeastsNft = new web3.eth.Contract(cryptoBeastsNFTAbi.abi, cryptoBeastsNFTAddress);
   
   const balanceOf = async (cryptoBeastsNFT, userAddress) => {
     const balance = await cryptoBeastsNFT.methods.balanceOf(userAddress).call();
@@ -42,10 +47,6 @@ exports.getCards = async (req,res) => {
     };
   };
 
-  const providerUrl = `https://polygon-mumbai.infura.io/v3/${process.env.WEB3_INFURA_PROJECT_ID}`;
-  const web3 = new Web3(providerUrl);
-  const cryptoBeastsNft = new web3.eth.Contract(cryptoBeastsNFTAbi.abi, cryptoBeastsNFTAddress);
-  
   const userTokens = await balanceOf(cryptoBeastsNft, addr);
   
   const cartas = userTokens.map((card)=>{
@@ -53,4 +54,20 @@ exports.getCards = async (req,res) => {
   })
   const responses = await Promise.all(cartas);
   res.send(responses)
+}
+
+
+exports.getBoosterPack = async (req,res) => {
+  const cardType = req.query.cardType;
+  const addr = req.query.userAddres;
+
+  const providerUrl = `https://polygon-mumbai.infura.io/v3/${process.env.WEB3_INFURA_PROJECT_ID}`;
+  const web3 = new Web3(providerUrl);
+  const cryptoBeastsNft = new web3.eth.Contract(cryptoBeastsNFTAbi.abi, cryptoBeastsNFTAddress, {from: addr});
+  
+  try{
+    await cryptoBeastsNft.methods.buyBoosterPack(parseInt(cardType)).send();
+  }catch(ex){
+    res.status(500).send(ex)
+  }
 }

@@ -14,8 +14,9 @@ export default class CardDetail extends Phaser.Physics.Arcade.Sprite {
         
         //Create def card sprite
         this.frame = this.scene.add.image(10, 10, CARD_PROPERTIES.idle).setOrigin(0);
-        //this.card = this.scene.add.image(40, 65, 'card', 0).setOrigin(0);
-        
+        this.card = this.scene.add.image(37, 59, 'card', 0).setOrigin(0);
+        this.card.setScale(0.26);
+
         // this.card.setBounce(1, 1);
         // this.card.setInteractive();
 
@@ -64,14 +65,33 @@ export default class CardDetail extends Phaser.Physics.Arcade.Sprite {
         
     }
 
-    setProps(props){
-        this.name.setText(props.name);
-        this.energy.setText(props.energy);
-        this.effectDef.setText(props.effectDef);
-        this.attack.setText(!!props.attack ? `Att: ${props.attack}` : ``);
-        this.defense.setText(!!props.attack ? `Def: ${props.defense}`: ``);
+    setProps(props, img){
+      this.name.setText(props.name);
+      this.energy.setText(props.energy);
+      this.effectDef.setText(props.effectDef);
+      this.attack.setText(!!props.attack ? `Att: ${props.attack}` : ``);
+      this.defense.setText(!!props.attack ? `Def: ${props.defense}`: ``);
 
-        //Setear imagen
+      //Setear imagen
+      this.card.setTexture(img);
+
+      const mainColor = Phaser.Display.Color.ValueToColor(props.rarity > 2 ? '#80ffff' : '#ffffff')
+      const secondaryColor = Phaser.Display.Color.ValueToColor(props.rarity === 2 ? '#94efe5' : '#80bfff')
+      
+      if(props.rarity > 1)
+        this.scene.tweens.addCounter({
+          from:0,
+          to:100,
+          duration: props.rarity > 2 ? 3000 : 700,
+          ease: Phaser.Math.Easing.Sine.InOut,
+          yoyo: true,
+          onUpdate: tween => {
+              const colorObj = Phaser.Display.Color.Interpolate.ColorWithColor(mainColor, secondaryColor, 100, tween.getValue())
+              this.frame.setTint(Phaser.Display.Color.GetColor(colorObj.r,colorObj.g,colorObj.b));
+          }
+        })
+      else
+        this.frame.setTint(0xffffff);
     }
     
     update() {
