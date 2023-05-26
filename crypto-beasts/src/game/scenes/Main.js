@@ -4,6 +4,7 @@ import Card from '../objects/Card'
 import CardDetail from '../objects/CardDetail'
 import Stats from '../objects/Stats'
 import Message from '../objects/Message'
+import CipherService from '../../services/cipherService'; 
 
 export default class Main extends Scene{
     
@@ -24,11 +25,15 @@ export default class Main extends Scene{
         this.initStats = {hp: 50, ep: 0, hp_enemy: 50, ep_enemy: 15};
 
         //Socket instance
-        this.socket = undefined;       
+        this.socket = undefined;
+        
+        //Match room instance
+        this.room = "";
     }
 
     init(data){
         this.socket = data.socket;
+        this.room = data.room;
     }
 
     preload(){
@@ -41,6 +46,7 @@ export default class Main extends Scene{
             return {
                 ...card.def,
                 id: card.tokenId,
+                rarity: card.rarity,
                 urlIMG: card.urlImg
             }
         })
@@ -157,17 +163,22 @@ export default class Main extends Scene{
         });
 
         //On Receive enemy play
-        this.socket.on("enemy_play", (data)=>{
+        this.socket.on("enemy_play", (data_)=>{
+            const data = JSON.parse(CipherService.decrypt(data_, this.room));
             //Set enemy card on board
             const newX = 6 - ((data.posPlayed.x - 360)/80);
             const tmpY = (data.posPlayed.y - 70)/117;
-            const newY = tmpY - ((tmpY-2)*3) - 1;
+            const newY = tmpY - ((tmpY-2)*3) - (data.cardInfo.type > 1 ? 0:1);
             const offSet = {
                 x: -1,
                 y: 15
             }
             this.load.image(`card_${data.cardId}`, data.cardInfo.urlIMG);
-            this.enemyCards.push(new Card(this, 360+(newX*80) + offSet.x,(newY*117) + offSet.y, 0, undefined, undefined, undefined, undefined, undefined, 0.095));
+            this.load.once(Phaser.Loader.Events.COMPLETE, () => {
+                let cardTmp = new Card(this, 360+(newX*80) + offSet.x,(newY*117) + offSet.y, 0, undefined, undefined, undefined, undefined, `card_${data.cardId}`, 0.095, true);
+                this.enemyCards.push(data);
+            });
+            this.load.start();            
             
             //Update energy stats
             this.stats.setStats({...this.stats.stats, ep_enemy: this.stats.stats.ep_enemy - data.cardInfo.energy})//Update enemy energy

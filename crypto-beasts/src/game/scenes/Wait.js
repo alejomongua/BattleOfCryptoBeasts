@@ -18,7 +18,7 @@ export default class Wait extends Scene{
     }
 
     create(){
-        this.find = this.add.text(0, 330, 'Buscar partida',{ fixedWidth: 1000})
+        this.find = this.add.text(0, 330, 'Find match!',{ fixedWidth: 1000})
             .setAlign('center')
             .setFontSize(40)
             .setInteractive({ useHandCursor: true })
@@ -27,7 +27,7 @@ export default class Wait extends Scene{
             .on('pointerout', () => this.find.setStyle({ fill: '#FFF' }))
 
         this.msg = this.add
-          .text(0, 330, 'Buscando partida', { fixedWidth: 1000})
+          .text(0, 330, 'Searching game room', { fixedWidth: 1000})
           .setAlign('center')
           .setVisible(false)
           .setFontFamily('Agency FB')
@@ -60,7 +60,7 @@ export default class Wait extends Scene{
 
         //On match found
         this.socket.on("match_found", (data)=>{
-            this.scene.start('main',{socket: this.socket});
+            this.scene.start('main',{socket: this.socket, room: data});
         });
     }
 

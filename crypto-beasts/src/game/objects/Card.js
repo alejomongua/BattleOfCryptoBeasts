@@ -1,4 +1,5 @@
 import Phaser from 'phaser'
+import CipherService from '../../services/cipherService'; 
 
 const CARD_PROPERTIES = {
   w: 102,
@@ -13,7 +14,7 @@ export default class Card extends Phaser.Physics.Arcade.Sprite {
         return CARD_PROPERTIES;
     }
     
-    constructor(scene,x,y,id, handX, handY, props, urlIMG, imgID = CARD_PROPERTIES.idle, scale=0.12) {
+    constructor(scene,x,y,id, handX, handY, props, urlIMG, imgID = CARD_PROPERTIES.idle, scale=0.12, enemy=false) {
         super(scene, x, y, id)
 
         this.scene = scene;
@@ -30,6 +31,7 @@ export default class Card extends Phaser.Physics.Arcade.Sprite {
             y: handY
         }
         this.urlIMG = urlIMG;
+        this.imgID = imgID;
         this.props = props;
 
         //Create card sprite
@@ -37,6 +39,9 @@ export default class Card extends Phaser.Physics.Arcade.Sprite {
         this.card.setScale(scale)
         this.card.setBounce(1, 1);
         this.card.setInteractive();
+
+        if(enemy === true)
+            this.card.flipY = true;
 
         //Create stat elements
         this.playerName = this.scene.add
@@ -77,11 +82,15 @@ export default class Card extends Phaser.Physics.Arcade.Sprite {
                             this.scene.msg.setMsg();
                             this.resetPos(cell.x + ((this.card.width*scale)/2), cell.y + ((this.card.height*scale)/2), scale);
                             
-                            this.scene.socketMsg('card_played', {
+                            const msg = CipherService.encrypt({
                                 cardId: this.id,
                                 cardInfo: {...this.props, urlIMG: this.urlIMG},
                                 posPlayed: { x: cell.x + ((this.card.width*scale)/2), y: cell.y - ((this.card.height*scale)/2)}
-                            })
+                            }, this.scene.room)
+
+                            this.scene.socketMsg('card_played', msg)
+
+                            console.log(this.scene.enemyCards)
                         }else{//Error on placement of card
                             this.scene.msg.setMsg(cell.err);
                             this.resetPos();
@@ -96,7 +105,7 @@ export default class Card extends Phaser.Physics.Arcade.Sprite {
             this.scene.input.on('gameobjectover', (pointer, gameObject) => {
                 if(this.code === gameObject.name && this.scene.selectedCard === '' && this.enabled){
                     this.card.setScale(0.16);
-                    this.scene.cardDef.setProps(this.props)
+                    this.scene.cardDef.setProps(this.props, this.imgID)
                 }
             });
 
