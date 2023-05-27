@@ -90,7 +90,7 @@ export default class Card extends Phaser.Physics.Arcade.Sprite {
 
                             this.scene.socketMsg('card_played', msg)
 
-                            console.log(this.scene.enemyCards)
+                            this.checkEffect();
                         }else{//Error on placement of card
                             this.scene.msg.setMsg(cell.err);
                             this.resetPos();
@@ -134,6 +134,35 @@ export default class Card extends Phaser.Physics.Arcade.Sprite {
                 this.card.x = mousePointer.x;
                 this.card.y = mousePointer.y;
             }
+        }
+    }
+
+    /*Check card effect */
+    checkEffect(){
+        switch(this.props.type){
+            case 1://Monster
+                const monsters = this.scene.enemyCards.map(x=>x.cardInfo).filter(x=>x.type === 1);
+                if(monsters.length === 0){//Direct attack
+                    const tmpY = this.card.y;
+                    this.scene.tweens.addCounter({
+                        from:0,
+                        to:250,
+                        duration: 500,
+                        ease: Phaser.Math.Easing.Sine.In,
+                        yoyo: true,
+                        onUpdate: tween => {
+                            this.card.y = tmpY - tween.getValue();
+                        }
+                    })
+                    this.scene.stats.setStats({...this.scene.stats.stats, hp_enemy: this.scene.stats.stats.hp_enemy - this.props.attack})//Update enemy life
+                }else{//Attack another monster
+
+                }
+                break;
+            case 2://Ability
+                break;
+            case 3://Object
+                break;
         }
     }
 
