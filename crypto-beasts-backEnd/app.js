@@ -2,11 +2,10 @@ var createError = require('http-errors');
 const express = require('express');
 const admin = require("firebase-admin");
 const serviceAccount = require("./serviceAccountKey.json");
-const  cors = require('cors');
+const cors = require('cors');
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+admin.initializeApp({credential: admin.credential.cert(serviceAccount)});
+
 
 var path = require('path');
 var cookieParser = require('cookie-parser');
@@ -30,18 +29,17 @@ app.use('/', indexRouter);
 app.use('/beast', beastRouter);
 app.use('/contract', contractRouter);
 
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
     next(createError(404));
 });
 
-app.use(function(err, req, res, next) {
-    // set locals, only providing error in development
+app.use(function (err, req, res, next) { // set locals, only providing error in development
     res.locals.message = err.message;
     res.locals.error = req.app.get('env') === 'development' ? err : {};
-  
+
     // send the error page
     res.status(err.status || 500);
     res.send('error');
-  });
+});
 
 module.exports = app;

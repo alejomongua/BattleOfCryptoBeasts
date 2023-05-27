@@ -10,6 +10,8 @@ const Dashboard = () => {
   const [isBuying, setIsBuying] = useState(false);
   const [eventText, setEventText] = useState("Buy Booster Pack");
   const [event, setEvent] = useState(1);
+  const [price, setPrice] = useState('');
+  const [approvedMarketplace, setApprovedMarketplace] = useState(false);
   const account = sessionStorage.getItem("userID");
 
   const getCards = () =>{
@@ -37,6 +39,11 @@ const Dashboard = () => {
     }
   }
 
+  const createOffer = async (tokenId) => {
+      const result = await ContractService.createOffer(account, tokenId, price);
+      console.log(result);
+  };
+
   useEffect(() => {
       if (account) {
         getCards()
@@ -52,6 +59,15 @@ const Dashboard = () => {
       }else{
         setEventText("Buy Booster Pack");
         setEvent(1);
+      }
+    });
+
+    ContractService.checkApproval(account).then((val)=>{
+      console.log(val)
+      if(val){
+        setApprovedMarketplace(true);
+      }else{
+        setApprovedMarketplace(false);
       }
     });
   },[])
@@ -114,9 +130,20 @@ const Dashboard = () => {
             </div>
             <img src={selectedCard.urlImg}
               alt={`Card ${selectedCard.def.name}`}
-              style={{maxHeight: '600px'}
+              style={{maxHeight: '500px'}
               }/>
             <span>{`Rarity: ${selectedCard.rarity === "1" ? 'Common' : selectedCard.rarity === "2" ? 'Rare' : 'Legendary'}`}</span>
+            {
+              approvedMarketplace ?
+                <div className="offer">
+                  <input type="text" value={price} onChange={e => setPrice(e.target.value)} placeholder="Price" />
+                  <button onClick={() => createOffer(selectedCard.tokenId)}>Create Offer</button>
+                </div>
+                :
+                <button onClick={() => ContractService.setApproval(account).then(() => setApprovedMarketplace(true))}>
+                  Approve Marketplace
+                </button>
+            }
           </div>
         }
       </div>
