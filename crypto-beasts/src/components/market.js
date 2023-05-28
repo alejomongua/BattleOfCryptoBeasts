@@ -60,7 +60,7 @@ const Market = () => {
                         }/>
                         <span className='marketHeader'>{`Rarity: ${offer.rarity === "1" ? 'Common' : offer.rarity === "2" ? 'Rare' : 'Legendary'}`}</span>
                         
-                        <p className='market'>Price: <span className='market'>{offer.offer[1]}</span></p>
+                        <p className='market'>Price: <span className='market'>{`${(offer.offer[1] * 1e-18).toFixed(2)}CBC`}</span></p>
                         {!isBuying ?
                             <button className='dashboard__buy' onClick={() => onBuyToken(offer.tokenId.split('_')[0], offer.offer[1])}>{(allowedValue > parseInt(offer.offer[1])) ? 'Buy' : 'Approve Marketplace'}</button> 
                             :
