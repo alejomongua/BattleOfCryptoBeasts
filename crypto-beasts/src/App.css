@@ -12,16 +12,19 @@ html, body, #root{
   display: flex;
   flex-direction: column;
   justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
 }
 
 .App-header {
-  min-height: 100vh;
+  height: 10%;
+}
+
+.App-content{
+  height: 90%;
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  align-items: center;
 }
 
 .App-link {
@@ -124,6 +127,12 @@ nav{
   justify-content: space-evenly;
 }
 
+.dashboard__Preview{
+  max-width: 340px;
+  margin: 0 auto;
+  max-height: '500px'
+}
+
 .dashboard__list{
   max-height: 650px;
   display: grid;
@@ -131,6 +140,32 @@ nav{
   grid-template-columns: 20% 20% 20% 20%;
   height: 80%;
   overflow-y: scroll;
+}
+
+.list_market{
+  height: 100% !important;
+  margin: 0;
+  padding: 2em;
+  max-height: 100%;
+}
+
+.dashboard__card.market{
+  justify-content: space-between;
+}
+
+p.market{
+  margin: 0;
+  font-size: 20px;
+}
+
+span.market{
+  word-wrap: break-word;
+  font-size: 0.7em;
+}
+
+.marketHeader{
+  font-size: 20px;
+  height: 60px;
 }
 
 .dashboard__buy{
@@ -175,6 +210,34 @@ nav{
   font-size: 15px;
 }
 
+.offer{
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  padding: 0.5em;
+}
+
+input[type="number"].sell {
+  font-size: 18px;
+  margin: 10px 0;
+  text-align: center;
+  font-family: "Merriweather", sans-serif;
+}
+
+button.sell {
+  margin: 0;
+}
+
+.close{
+  border: none;
+  margin-left: 1em;
+  background: none;
+  color: #555;
+}
+
+.close:hover{
+  color: #000;
+}
 
 .loadBuy{
   margin-top: 2em;
@@ -258,4 +321,9 @@ nav{
   100% {
     opacity: 0;
   }
+}
+
+.alert{
+  position: absolute;
+  bottom: 0;
 }
