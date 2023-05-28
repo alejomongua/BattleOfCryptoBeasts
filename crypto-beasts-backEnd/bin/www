@@ -1,4 +1,4 @@
-#!/usr/bin/env nod
+#!/usr/bin/env no
 
 /**
  * Module dependencies.
@@ -31,7 +31,7 @@ const socketIO = new Server(server, {
         origin: process.env.FRONT_END_URI,
         methods: ['GET', 'POST']
     },
-    path: process.env.PREFIX_PATH + '/socket.io/'
+    path: process.env.PREFIX_PATH + 'socket.io/'
 })
 // Socket io controller
 require('../controllers/socketController.js')(socketIO)
