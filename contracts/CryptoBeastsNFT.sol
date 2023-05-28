@@ -77,20 +77,22 @@ contract CryptoBeastsNFT is ERC721Enumerable, Ownable, Pausable {
     }
 
     function _getRandomNumber(
-        uint256 upperBound
+        uint256 upperBound,
+        uint256 seed
     ) private view returns (uint256) {
         bytes32 randomHash = keccak256(
             abi.encodePacked(
                 block.timestamp,
                 blockhash(block.number - 1),
-                msg.sender
+                msg.sender,
+                seed
             )
         );
         return uint256(randomHash) % upperBound;
     }
 
-    function _getRandomRarity() private view returns (uint8) {
-        uint256 random = _getRandomNumber(100);
+    function _getRandomRarity(uint256 seed) private view returns (uint8) {
+        uint256 random = _getRandomNumber(100, seed);
         if (random < LEGENDARY_PROBABILITY) {
             return 3; // Legendaria
         } else if (random < LEGENDARY_PROBABILITY + RARE_PROBABILITY) {
@@ -102,13 +104,11 @@ contract CryptoBeastsNFT is ERC721Enumerable, Ownable, Pausable {
     }
 
     function mint(address to, uint256 _cardId) private {
-        require(_tokenIdTracker.current() < MAX_SUPPLY, "No cards left");
         require(cardStock[_cardId] > 0, "No stock left for this card");
-
-        uint8 randomRarity = _getRandomRarity();
 
         _tokenIdTracker.increment();
         uint256 tokenId = _tokenIdTracker.current();
+        uint8 randomRarity = _getRandomRarity(tokenId);
 
         cards[tokenId] = Card(_cardId, randomRarity);
         cardStock[_cardId] -= 1;
@@ -254,17 +254,20 @@ contract CryptoBeastsNFT is ERC721Enumerable, Ownable, Pausable {
         for (uint256 i = 0; i < _numCards; i++) {
             if (_cardType == 1) {
                 uint256 randomIndex = _getRandomNumber(
-                    criaturasDisponibles.length
+                    criaturasDisponibles.length,
+                    i
                 );
                 cardIds[i] = criaturasDisponibles[randomIndex];
             } else if (_cardType == 2) {
                 uint256 randomIndex = _getRandomNumber(
-                    habilidadesDisponibles.length
+                    habilidadesDisponibles.length,
+                    i
                 );
                 cardIds[i] = habilidadesDisponibles[randomIndex];
             } else {
                 uint256 randomIndex = _getRandomNumber(
-                    objetosDisponibles.length
+                    objetosDisponibles.length,
+                    i
                 );
                 cardIds[i] = objetosDisponibles[randomIndex];
             }

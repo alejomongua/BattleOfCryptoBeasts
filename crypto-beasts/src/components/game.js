@@ -44,7 +44,7 @@ const Game = () => {
   },[])
 
   return (
-    <div className="App">
+    <div className="App-content">
       { canPlay === true ?
       <div id="game-content" key="game-content">
 

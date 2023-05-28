@@ -7,7 +7,7 @@ const Layout = ({
   const location = useLocation(); 
   return (
     <>
-      <nav>
+      <nav className='App-header'>
         <ul className="listMenu">
           <li>
             <Link to="/dashboard" className={`link ${"/dashboard" === location.pathname ? "active" : ""}`}>Dashboard</Link>
@@ -16,7 +16,7 @@ const Layout = ({
             <Link to="/game" className={`link ${"/game" === location.pathname ? "active" : ""}`}>Play</Link>
           </li>
           <li>
-            <Link to="/friends" className={`link ${"/friends" === location.pathname ? "active" : ""}`}>Friends</Link>
+            <Link to="/market" className={`link ${"/market" === location.pathname ? "active" : ""}`}>Market</Link>
           </li>
           <li>
             <Link to="/" className={`link`} onClick={onLogout}>Log out</Link>

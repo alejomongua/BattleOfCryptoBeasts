@@ -10,9 +10,9 @@ import Login from "./components/login";
 import Layout from './components/layout';
 import Dashboard from './components/dashboard';
 import Game from './components/game';
-import Friends from './components/friends';
 import Store from './components/store';
 import NoPage from './components/nopage'
+import Market from "./components/market";
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_API_KEY,
@@ -89,27 +89,25 @@ const App = () => {
 
   return (
     <div className="App">
-      <header className="App-header">
-        {
-          !isAuth ?
-          <Login
-            onPressConnect={onPressConnect}
-            loading={loading}
-          />:
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Layout onLogout={onPressLogout} />}>
-                <Route path="/" element={<Navigate to="dashboard" />} />
-                <Route path="dashboard" element={<Dashboard />} />
-                <Route path="game" element={<Game />} />
-                <Route path="friends" element={<Friends />} />
-                <Route path="store" element={<Store />} />
-                <Route path="*" element={<NoPage />} />
-              </Route>
-            </Routes>
-          </BrowserRouter>
-        }
-      </header>
+      {
+        !isAuth ?
+        <Login
+          onPressConnect={onPressConnect}
+          loading={loading}
+        />:
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Layout onLogout={onPressLogout} />}>
+              <Route path="/" element={<Navigate to="dashboard" />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="game" element={<Game />} />
+              <Route path="market" element={<Market />} />
+              <Route path="store" element={<Store />} />
+              <Route path="*" element={<NoPage />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      }
     </div>
   );
 };
