@@ -10,18 +10,18 @@ const Market = () => {
 
     const account = sessionStorage.getItem("userID");
 
+    const fetchOffers = async () => {
+        ContractService.fetchOffers().then((currentOffers)=>{
+            setOffers(currentOffers);
+            setIsLoading(false);
+        });
+    };
+
     useEffect(() => {
         setIsLoading(true);
         ContractService.checkApprovalCBC(account).then((val) => {
             setAllowedValue(val);
         });
-        const fetchOffers = async () => {
-            ContractService.fetchOffers().then((currentOffers)=>{
-                setOffers(currentOffers);
-                setIsLoading(false);
-            });
-        };
-
         fetchOffers();
     }, []);
 
@@ -29,8 +29,8 @@ const Market = () => {
         setIsBuying(true);
         if(allowedValue > parseInt(price)){
             ContractService.buyToken(account, tokenId).then(()=>{
-                setOffers(offers => offers.filter(offer => offer.tokenId !== tokenId));
                 setIsBuying(false);
+                fetchOffers();
             })
         }else{
             ContractService.approveMarketplace(account).then(()=>{
@@ -62,7 +62,7 @@ const Market = () => {
                         
                         <p className='market'>Price: <span className='market'>{offer.offer[1]}</span></p>
                         {!isBuying ?
-                            <button className='dashboard__buy' onClick={() => onBuyToken(offer.tokenId, offer.offer[1])}>{(allowedValue > parseInt(offer.offer[1])) ? 'Buy' : 'Approve Marketplace'}</button> 
+                            <button className='dashboard__buy' onClick={() => onBuyToken(offer.tokenId.split('_')[0], offer.offer[1])}>{(allowedValue > parseInt(offer.offer[1])) ? 'Buy' : 'Approve Marketplace'}</button> 
                             :
                             <div className='loadBuy'>
                                 <Spinner />
