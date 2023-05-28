@@ -16,6 +16,7 @@ var beastRouter = require('./routes/beast');
 var contractRouter = require('./routes/contracts');
 
 var app = express();
+const basePath = process.env.PREFIX_PATH || '/';
 
 app.use(logger('dev'));
 
@@ -25,9 +26,9 @@ app.use(express.urlencoded({limit: '50mb', extended: false}));
 app.use(cookieParser());
 app.use(cors());
 
-app.use('/', indexRouter);
-app.use('/beast', beastRouter);
-app.use('/contract', contractRouter);
+app.use(basePath, indexRouter);
+app.use(basePath + 'beast', beastRouter);
+app.use(basePath + 'contract', contractRouter);
 
 app.use(function (req, res, next) {
     next(createError(404));
