@@ -6,3 +6,6 @@ Contrato de CryptoBeastsNFT:
 
 Contrato de Marketplace:
 0x32ae6b2625fa21632622a95be22c9fab45c043ff
+
+Contrato de gifter:
+0x8e0bd3FAdE3ca936E36aF8e1369c3c4c895681f1

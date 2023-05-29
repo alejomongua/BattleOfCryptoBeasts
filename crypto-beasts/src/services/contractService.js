@@ -14,12 +14,12 @@ const cryptoBeastsMarketplaceAddress = process.env.REACT_APP_CB_MARKETPLACE_ADDR
 const coinContract = new web3.eth.Contract(abiCoin.abi, cryptoBeastsCOINAddress);
 const nftContract = new web3.eth.Contract(abiNFT.abi, cryptoBeastsNFTAddress);
 const marketplaceContract = new web3.eth.Contract(abiMarketplace.abi, cryptoBeastsMarketplaceAddress);
+const baseUrl = process.env.REACT_APP_CRYPTO_BEAST_BACK_END + process.env.REACT_APP_CRYPTO_BEAST_BACK_END_PREFIX;
 
 const ContractService = {
 
     getCards: async (address) => {
         try {
-            const baseUrl = process.env.REACT_APP_CRYPTO_BEAST_BACK_END;
             const response = await axios.get(`${baseUrl}contract/cards?userAddres=${address}`);
             return response.data;
         } catch (ex) {
@@ -110,7 +110,6 @@ const ContractService = {
     // This function fetches the current list of offered tokens.
     fetchOffers: async (address) => { // Fetch the current block number.
         try {
-            const baseUrl = process.env.REACT_APP_CRYPTO_BEAST_BACK_END;
             const response = await axios.get(`${baseUrl}contract/offers`);
             return response.data;
         } catch (ex) {

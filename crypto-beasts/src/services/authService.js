@@ -6,7 +6,7 @@ const AuthService = {
 
     handleLogin: async (address, auth) => {
       try{
-        const baseUrl = process.env.REACT_APP_CRYPTO_BEAST_BACK_END;
+        const baseUrl = process.env.REACT_APP_CRYPTO_BEAST_BACK_END + process.env.REACT_APP_CRYPTO_BEAST_BACK_END_PREFIX;
         const response = await axios.get(`${baseUrl}beast/message?address=${address}`);
         const messageToSign = response?.data?.messageToSign;
     
